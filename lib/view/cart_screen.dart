@@ -21,7 +21,7 @@ class _CartScreenState extends State<CartScreen> {
     _cartList = widget.cartList;
   }
 
-  ///
+  //
   int itemCount = 1;
 //item add
   void add() {
@@ -31,7 +31,11 @@ class _CartScreenState extends State<CartScreen> {
 
   //item remove
   void remove() {
-    itemCount--;
+    if (itemCount > 1) {
+      itemCount--;
+    } else {
+      _cartList.remove(_cartList);
+    }
     setState(() {});
   }
 
@@ -39,7 +43,7 @@ class _CartScreenState extends State<CartScreen> {
   double get totalPrice {
     double total = 0;
     for (var x in _cartList) {
-      total += x.price;
+      total += x.price * itemCount;
     }
     return total;
   }
@@ -51,11 +55,6 @@ class _CartScreenState extends State<CartScreen> {
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
-              /* Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HomeScreen(),
-                  )); */
             },
             icon: Icon(
               Icons.arrow_back,
