@@ -38,7 +38,18 @@ class _HomeScreenState extends State<HomeScreen> {
         price: 299),
     //add to cart
   ];
-//
+  //
+  void toggleCart(Furniture item) {
+    setState(() {
+      if (cartList.contains(item)) {
+        cartList.remove(item);
+      } else {
+        cartList.add(item);
+      }
+    });
+  }
+
+//add to cart
   void addToCart(Furniture furniture) {
     setState(() {
       cartList.add(furniture);
@@ -146,12 +157,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             right: 10,
                             child: IconButton.outlined(
                               icon: Icon(
-                                Icons.favorite_border_rounded,
+                                cartList.contains(myList[index])
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
                                 color: Colors.black,
                                 size: 30,
                               ),
                               onPressed: () {
-                                addToCart(myList[index]);
+                                toggleCart(myList[index]);
+                                //  addToCart(myList[index]);
                                 // Add to cart functionality
                               },
                             ),
