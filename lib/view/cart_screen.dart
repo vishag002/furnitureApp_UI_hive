@@ -1,27 +1,61 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:shopping_cart_hive/view/home_screen.dart';
+import 'package:shopping_cart_hive/model/furniture.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({super.key});
+  final List<Furniture> cartList;
+  const CartScreen({Key? key, required this.cartList}) : super(key: key);
 
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
+  //
+  late List<Furniture> _cartList;
+  //
+  @override
+  void initState() {
+    super.initState();
+    _cartList = widget.cartList;
+  }
+
+  ///
+  int itemCount = 1;
+//item add
+  void add() {
+    itemCount++;
+    setState(() {});
+  }
+
+  //item remove
+  void remove() {
+    itemCount--;
+    setState(() {});
+  }
+
+  //total amount
+  double get totalPrice {
+    double total = 0;
+    for (var x in _cartList) {
+      total += x.price;
+    }
+    return total;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(
+              Navigator.pop(context);
+              /* Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => HomeScreen(),
-                  ));
+                  )); */
             },
             icon: Icon(
               Icons.arrow_back,
@@ -43,7 +77,7 @@ class _CartScreenState extends State<CartScreen> {
       ),
       body: ListView.builder(
         addAutomaticKeepAlives: true,
-        itemCount: 10,
+        itemCount: _cartList.length,
         physics: BouncingScrollPhysics(),
         padding: EdgeInsets.all(15),
         itemBuilder: (context, index) => Padding(
@@ -66,7 +100,7 @@ class _CartScreenState extends State<CartScreen> {
                         color: Colors.black,
                       ),
                       child: Image.network(
-                        "https://img.zcdn.com.au/lf/8/hash/39258/19720789/4/custom_image.jpg",
+                        _cartList[index].imagrurl,
                         fit: BoxFit.fill,
                       )),
                   Padding(
@@ -81,9 +115,9 @@ class _CartScreenState extends State<CartScreen> {
                             Padding(
                               padding: const EdgeInsets.only(left: 10),
                               child: Text(
-                                "Name",
+                                _cartList[index].title,
                                 style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -91,29 +125,29 @@ class _CartScreenState extends State<CartScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("\$299",
+                                Text("\$${_cartList[index].price}",
                                     style: TextStyle(
-                                        fontSize: 25,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.w900)),
                                 Container(
                                   height: 40,
-                                  width: 104,
+                                  //width: 104,
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10),
                                       color: Colors.white54),
                                   child: Row(
                                     children: [
                                       IconButton(
-                                          onPressed: () {},
+                                          onPressed: remove,
                                           icon: Icon(
                                             Icons.remove,
                                             color: Colors.orange[600],
                                           )),
-                                      Text("1",
+                                      Text(itemCount.toString(),
                                           style: TextStyle(
                                               fontWeight: FontWeight.w600)),
                                       IconButton(
-                                          onPressed: () {},
+                                          onPressed: add,
                                           icon: Icon(
                                             Icons.add,
                                             color: Colors.orange[600],
@@ -152,7 +186,7 @@ class _CartScreenState extends State<CartScreen> {
                   style: TextStyle(fontSize: 25),
                 ),
                 Text(
-                  "\$299",
+                  "\$${totalPrice}",
                   style: TextStyle(fontSize: 30),
                 )
               ],

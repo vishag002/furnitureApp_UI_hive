@@ -12,8 +12,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  //
+  List<Furniture> cartList = [];
   //list
-  final List<Furniture> myList = [
+  List<Furniture> myList = [
     Furniture(
         title: "Single chair yhomebaby",
         imagrurl:
@@ -34,7 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
         imagrurl:
             "https://i.pinimg.com/originals/5d/3f/4b/5d3f4beddcc6d66f6d3791641380dbae.jpg",
         price: 299),
+    //add to cart
   ];
+//
+  void addToCart(Furniture furniture) {
+    setState(() {
+      cartList.add(furniture);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CartScreen(),
+                      builder: (context) => CartScreen(cartList: cartList),
                     ));
               },
               icon: Padding(
@@ -141,6 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 30,
                               ),
                               onPressed: () {
+                                addToCart(myList[index]);
                                 // Add to cart functionality
                               },
                             ),
