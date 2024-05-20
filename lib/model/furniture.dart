@@ -2,12 +2,12 @@ class Furniture {
   String title;
   String imagrurl;
   int price;
-//  int id;
+  int quantity;
 
   Furniture({
     required this.title,
     required this.imagrurl,
     required this.price,
-    // required this.id,
+    this.quantity = 1,
   });
 }

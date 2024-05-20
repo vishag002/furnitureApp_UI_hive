@@ -22,28 +22,30 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   //
-  int itemCount = 1;
 //item add
-  void add() {
-    itemCount++;
-    setState(() {});
+  void add(Furniture item) {
+    setState(() {
+      item.quantity++;
+    });
   }
 
   //item remove
-  void remove() {
-    if (itemCount > 1) {
-      itemCount--;
-    } else {
-      _cartList.remove(_cartList);
-    }
-    setState(() {});
+
+  void remove(Furniture item) {
+    setState(() {
+      if (item.quantity > 1) {
+        item.quantity--;
+      } else {
+        _cartList.remove(item);
+      }
+    });
   }
 
   //total amount
   double get totalPrice {
     double total = 0;
-    for (var x in _cartList) {
-      total += x.price * itemCount;
+    for (var item in _cartList) {
+      total += item.price * item.quantity;
     }
     return total;
   }
@@ -137,16 +139,18 @@ class _CartScreenState extends State<CartScreen> {
                                   child: Row(
                                     children: [
                                       IconButton(
-                                          onPressed: remove,
+                                          onPressed: () =>
+                                              remove(_cartList[index]),
                                           icon: Icon(
                                             Icons.remove,
                                             color: Colors.orange[600],
                                           )),
-                                      Text(itemCount.toString(),
+                                      Text(_cartList[index].quantity.toString(),
                                           style: TextStyle(
                                               fontWeight: FontWeight.w600)),
                                       IconButton(
-                                          onPressed: add,
+                                          onPressed: () =>
+                                              add(_cartList[index]),
                                           icon: Icon(
                                             Icons.add,
                                             color: Colors.orange[600],
