@@ -1,6 +1,5 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:shopping_cart_hive/model/furniture.dart';
 import 'package:shopping_cart_hive/view/cart_screen.dart';
 
@@ -12,47 +11,69 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  //
+  late Box<Map> cartBox;
+  late Box<Map> furnitureBox;
   List<Furniture> cartList = [];
-  //list
-  List<Furniture> myList = [
-    Furniture(
-        title: "Single chair yhomebaby",
-        imagrurl:
-            "https://th.bing.com/th/id/R.1762b01444917ccd99451d21849244fb?rik=Si6GjuFKk5LjQw&riu=http%3a%2f%2fwww.yhomebaby.com%2fcdn%2fshop%2fproducts%2f7DE0D71B7688F0B9943856E94E5711F7.jpg%3fv%3d1646119422&ehk=USzL0%2bhx%2bGFFsSjyKpbk8JZIZq%2b4hr31SCHV006AjPo%3d&risl=&pid=ImgRaw&r=0",
-        price: 500),
-    Furniture(
-        title: "Modway Dining Armchair",
-        imagrurl:
-            "https://slimages.macysassets.com/is/image/MCY/products/7/optimized/10247387_fpx.tif?op_sharpen=1&wid=700&hei=855&fit=fit,1",
-        price: 299),
-    Furniture(
-        title: "Grey Carver Dining Chair",
-        imagrurl:
-            "https://img.zcdn.com.au/lf/8/hash/39258/19720789/4/custom_image.jpg",
-        price: 299),
-    Furniture(
-        title: "Pyramid Dining Armchair",
-        imagrurl:
-            "https://i.pinimg.com/originals/5d/3f/4b/5d3f4beddcc6d66f6d3791641380dbae.jpg",
-        price: 299),
-    //add to cart
-  ];
-  //
+  List<Furniture> myList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    cartBox = Hive.box<Map>('cartBox');
+    furnitureBox = Hive.box<Map>('furnitureBox');
+    loadFurnitureList();
+    loadCartList();
+  }
+
+  void loadFurnitureList() {
+    if (furnitureBox.isEmpty) {
+      myList = [
+        Furniture(
+            title: "Single chair yhomebaby",
+            imagrurl:
+                "https://th.bing.com/th/id/R.1762b01444917ccd99451d21849244fb?rik=Si6GjuFKk5LjQw&riu=http%3a%2f%2fwww.yhomebaby.com%2fcdn%2fshop%2fproducts%2f7DE0D71B7688F0B9943856E94E5711F7.jpg%3fv%3d1646119422&ehk=USzL0%2bhx%2bGFFsSjyKpbk8JZIZq%2b4hr31SCHV006AjPo%3d&risl=&pid=ImgRaw&r=0",
+            price: 500),
+        Furniture(
+            title: "Modway Dining Armchair",
+            imagrurl:
+                "https://slimages.macysassets.com/is/image/MCY/products/7/optimized/10247387_fpx.tif?op_sharpen=1&wid=700&hei=855&fit=fit,1",
+            price: 299),
+        Furniture(
+            title: "Grey Carver Dining Chair",
+            imagrurl:
+                "https://img.zcdn.com.au/lf/8/hash/39258/19720789/4/custom_image.jpg",
+            price: 299),
+        Furniture(
+            title: "Pyramid Dining Armchair",
+            imagrurl:
+                "https://i.pinimg.com/originals/5d/3f/4b/5d3f4beddcc6d66f6d3791641380dbae.jpg",
+            price: 299),
+      ];
+      for (var item in myList) {
+        furnitureBox.add(item.toMap());
+      }
+    } else {
+      myList = furnitureBox.values.map((map) {
+        return Furniture.fromMap(Map<String, dynamic>.from(map));
+      }).toList();
+    }
+  }
+
+  void loadCartList() {
+    cartList = cartBox.values.map((map) {
+      return Furniture.fromMap(Map<String, dynamic>.from(map));
+    }).toList();
+  }
+
   void toggleCart(Furniture item) {
     setState(() {
       if (cartList.contains(item)) {
         cartList.remove(item);
+        cartBox.delete(item.title); // Using title as a unique key
       } else {
         cartList.add(item);
+        cartBox.put(item.title, item.toMap());
       }
-    });
-  }
-
-//add to cart
-  void addToCart(Furniture furniture) {
-    setState(() {
-      cartList.add(furniture);
     });
   }
 
@@ -77,7 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CartScreen(cartList: cartList),
+                      builder: (context) =>
+                          CartScreen(cartBox: Hive.box<Furniture>('cartBox')),
                     ));
               },
               icon: Padding(
@@ -136,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSpacing: 10,
                 ),
                 itemBuilder: (context, index) => Container(
-                  //  color: Colors.amber,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -155,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             top: 10,
                             right: 10,
-                            child: IconButton.outlined(
+                            child: IconButton(
                               icon: Icon(
                                 cartList.contains(myList[index])
                                     ? Icons.favorite
@@ -165,8 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               onPressed: () {
                                 toggleCart(myList[index]);
-                                //  addToCart(myList[index]);
-                                // Add to cart functionality
                               },
                             ),
                           ),
