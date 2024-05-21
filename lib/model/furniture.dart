@@ -1,17 +1,7 @@
-import 'package:hive/hive.dart';
-
-@HiveType(typeId: 0)
-class Furniture extends HiveObject {
-  @HiveField(0)
+class Furniture {
   String title;
-
-  @HiveField(1)
   String imagrurl;
-
-  @HiveField(2)
-  double price;
-
-  @HiveField(3)
+  int price;
   int quantity;
 
   Furniture({
@@ -20,18 +10,17 @@ class Furniture extends HiveObject {
     required this.price,
     this.quantity = 1,
   });
-
-  // Convert a Furniture object to a map.
+  /////convert Furniture object into Map
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'imagrurl': imagrurl,
       'price': price,
-      'quantity': quantity,
+      'quantity': quantity
     };
   }
 
-  // Convert a map to a Furniture object.
+  ////covert a Map into Furniture Object
   factory Furniture.fromMap(Map<String, dynamic> map) {
     return Furniture(
       title: map['title'],
