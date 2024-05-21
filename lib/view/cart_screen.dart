@@ -1,45 +1,71 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:shopping_cart_hive/model/furniture.dart';
 
 class CartScreen extends StatefulWidget {
-  final Box<Furniture> cartBox;
-  const CartScreen({Key? key, required this.cartBox}) : super(key: key);
+  final List<Furniture> cartList;
+  const CartScreen({Key? key, required this.cartList}) : super(key: key);
 
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-  late Box<Furniture> _cartBox;
-
+  //hive reference
+  late Box _cartBox;
+  //
+  late List<Furniture> _cartList;
+  //
   @override
   void initState() {
     super.initState();
-    _cartBox = widget.cartBox;
+    _cartBox = Hive.box('cartBox');
+    _loadCartList();
+    //_cartList = widget.cartList;
   }
 
+  //
+  void _loadCartList() {
+    final cartMaps =
+        _cartBox.get('carList', defaultValue: <Map<String, dynamic>>[]);
+    _cartList =
+        cartMaps.map<Furniture>((map) => Furniture.fromMap(map)).toList();
+  }
+
+  //_Save cart List
+  void _saveCartList() {
+    final cartMaps = _cartList.map((item) => item.toMap()).toList();
+    _cartBox.put('cartList', cartMaps);
+  }
+
+  //
+//item add
   void add(Furniture item) {
     setState(() {
       item.quantity++;
-      _cartBox.put(item.title, item); // Save the updated item to Hive
     });
+    _saveCartList();
   }
+
+  //item remove
 
   void remove(Furniture item) {
     setState(() {
       if (item.quantity > 1) {
         item.quantity--;
-        _cartBox.put(item.title, item); // Save the updated item to Hive
       } else {
-        _cartBox.delete(item.title); // Remove the item from Hive
+        _cartList.remove(item);
       }
     });
+    _saveCartList();
   }
 
+  //total amount
   double get totalPrice {
     double total = 0;
-    for (var item in _cartBox.values) {
+    for (var item in _cartList) {
       total += item.price * item.quantity;
     }
     return total;
@@ -51,7 +77,9 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              setState(() {
+                Navigator.pop(context);
+              });
             },
             icon: Icon(
               Icons.arrow_back,
@@ -71,107 +99,98 @@ class _CartScreenState extends State<CartScreen> {
         ),
         centerTitle: true,
       ),
-      body: ValueListenableBuilder(
-        valueListenable: _cartBox.listenable(),
-        builder: (context, Box<Furniture> box, _) {
-          if (box.values.isEmpty) {
-            return Center(child: Text("Cart is empty"));
-          }
-
-          return ListView.builder(
-            itemCount: box.length,
-            itemBuilder: (context, index) {
-              final item = box.getAt(index);
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  height: 149,
-                  width: double.maxFinite,
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(31, 182, 124, 49),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Row(
-                      children: [
-                        Container(
-                            width: 120,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.black,
+      body: ListView.builder(
+        addAutomaticKeepAlives: true,
+        itemCount: _cartList.length,
+        physics: BouncingScrollPhysics(),
+        padding: EdgeInsets.all(15),
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            height: 149,
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+              color: Color.fromARGB(31, 182, 124, 49),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Row(
+                children: [
+                  Container(
+                      width: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.black,
+                      ),
+                      child: Image.network(
+                        _cartList[index].imagrurl,
+                        fit: BoxFit.fill,
+                      )),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, left: 15),
+                    child: Container(
+                      width: 190,
+                      //  color: Colors.amber,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10),
+                              child: Text(
+                                _cartList[index].title,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
-                            child: Image.network(
-                              item!.imagrurl,
-                              fit: BoxFit.fill,
-                            )),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10, left: 15),
-                          child: Container(
-                            width: 190,
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Text(
-                                      item.title,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("\$${_cartList[index].price}",
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900)),
+                                Container(
+                                  height: 40,
+                                  //width: 104,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Colors.white54),
+                                  child: Row(
                                     children: [
-                                      Text("\$${item.price}",
+                                      IconButton(
+                                          onPressed: () =>
+                                              remove(_cartList[index]),
+                                          icon: Icon(
+                                            Icons.remove,
+                                            color: Colors.orange[600],
+                                          )),
+                                      Text(_cartList[index].quantity.toString(),
                                           style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w900)),
-                                      Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            color: Colors.white54),
-                                        child: Row(
-                                          children: [
-                                            IconButton(
-                                                onPressed: () => remove(item),
-                                                icon: Icon(
-                                                  Icons.remove,
-                                                  color: Colors.orange[600],
-                                                )),
-                                            Text(item.quantity.toString(),
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w600)),
-                                            IconButton(
-                                                onPressed: () => add(item),
-                                                icon: Icon(
-                                                  Icons.add,
-                                                  color: Colors.orange[600],
-                                                )),
-                                          ],
-                                        ),
-                                      )
+                                              fontWeight: FontWeight.w600)),
+                                      IconButton(
+                                          onPressed: () =>
+                                              add(_cartList[index]),
+                                          icon: Icon(
+                                            Icons.add,
+                                            color: Colors.orange[600],
+                                          )),
                                     ],
-                                  )
-                                ]),
-                          ),
-                        )
-                      ],
+                                  ),
+                                )
+                              ],
+                            )
+                          ]),
                     ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.transparent,
